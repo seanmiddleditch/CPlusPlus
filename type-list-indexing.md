@@ -25,24 +25,25 @@ Motivation and Use Cases
 Various algorithms over parameter packs currently must be implemented as a recursive series of function
 or template invocations. This is often not the most natural or obvious way of implementing the algorithm.
 
-By allowing direct access to the element of a parameter pack by index, loops may be written over the
-pack. Example:
+By allowing direct access to the element of a parameter pack by index, algorithms that need access to specific elements or ranges of elements become easier to write and reason about:
 
-    template <typename ...Ts>
-    constexpr bool all(Ts&&... ts)
-    {
-      // check if any member of ts evaluates to false
-      for (auto index = 0U; index != sizeof...(ts); ++index)
-        if (!ts...[index])
-    	  return false;
-    	  
-      // either all members evaluated to true or there were no members; only succeed in former case
-      return sizeof...(ts) != 0;
+    template <typename Value, typename ...Ts> 
+    constexpr auto binary_search(Value& value, Ts&... ts) { 
+      // base case 
+      if (sizeof...(ts) == 1) 
+       return ts...[0]; 
+    
+      constexpr auto pivot = sizeof...(ts) / 2; 
+    
+      if (value < ts[pivot]) 
+        return binary_search(value, ts[std::make_index_sequence(pivot)]...); 
+      else 
+        return binary_search(value, ts[std::make_index_sequence(pivot + 1, sizeof...(ts))]); 
     }
+    
+Libraries such as the proposed [Boost.Hana](https://github.com/ldionne/hana) should also be easier to write and maintain with this feature.
 
-There are also cases where a user may only wish to iterate over part of a parameter pack such as when
-performing a binary search. This case is far more difficult to do with recursive template expansion
-than it would be if direct index access were allowed.
+The above example depends on a hypothetical `std::make_index_sequence` that takes a starting index which - while a useful addition to propose in the author's opinion - is not proposed as part of this paper.
 
 Alternatives
 ------------
@@ -93,6 +94,9 @@ alternative to the library approach presented. I used that as a trampoline for t
 
 Bjarne Stroustrup illustrated the computational complexity problems with a pure library approach
 compared to a core language approach.
+
+Matheus Izvekov provided some key feedback on the original draft, including pointing out a bad
+example in the code and mentioning Boost.Hana.
 
 **help needed** This same syntax was floated in response to another paper submitted to the committee
 sometime in the last year, but I have completely forgotten which paper or who made the suggestion,
