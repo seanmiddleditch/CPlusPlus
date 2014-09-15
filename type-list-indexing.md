@@ -27,12 +27,22 @@ or template invocations. This is often not the most natural or obvious way of im
 
 By allowing direct access to the element of a parameter pack by index, algorithms that need access to specific elements or ranges of elements become easier to write and reason about. Consider this contrived example:
 
-    template <typename Value, typename ...Ts> 
-    constexpr auto binary_search(Value& value, Ts&... ts) { 
-      // base case 
-      if (sizeof...(ts) == 1) 
-       return ts...[0]; 
+    // empty list case
+    template <typename Value>
+    constexpr bool binary_search(Value& value) {
+      // empty list
+      return false;
+    }
     
+    // single element case
+    template <typename Value, typename T>
+    constepxr bool binary_search(Value& value, T& t) {
+      return value == t;
+    }
+
+    // remaining cases
+    template <typename Value, typename ...Ts> 
+    constexpr bool binary_search(Value& value, Ts&... ts) { 
       constexpr auto pivot = sizeof...(ts) / 2; 
     
       if (value < ts[pivot]) 
