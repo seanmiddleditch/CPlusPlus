@@ -6,9 +6,8 @@ Date            : 2014-09-XX
 Project         : Programming Language C++, Evolution Working Group
 Reply-to        : Sean Middleditch <sean@seanmiddleditch.com>
 
-# Type List Indexing
-
-## Summary
+Summary
+-------
 
 This proposal is in response to feedback from [N3761]. This proposal introduces a language change that
 allows for easy and direct access to any member of a parameter pack using a constant expression integral
@@ -18,7 +17,8 @@ This facility combined with `sizeof...`, `std::integer_sequence`, and `constexpr
 for simpler transformations of parameter packs and algorithms without requiring the use of recursion
 where iteration may be the preferred implementation approach.
 
-## Motivation and Use Cases
+Motivation and Use Cases
+------------------------
 
 Various algorithms over parameter packs currently must be implemented as a recursive series of function
 or template invocations. This is often not the most natural or obvious way of implementing the algorithm.
@@ -42,7 +42,8 @@ There are also cases where a user may only wish to iterate over part of a parame
 performing a binary search. This case is far more difficult to do with recursive template expansion
 than it would be if direct index access were allowed.
 
-## Alternatives
+Alternatives
+------------
 
 The alternatives are the option presented in [N3761] or its alternatives.
 
@@ -66,7 +67,8 @@ in O(1).
 This proposal provides O(1) access using a standard syntax in place of an implementation-specific
 feature backing a library interface.
 	
-## Example Syntax
+Example Syntax
+--------------
 
 The proposed syntax looks like:
 
@@ -76,11 +78,13 @@ The proposed syntax looks like:
 	// context: template <typename ...Ts> void function(Ts... ts)
 	auto fourth_value = ts...[3];
 	
-## Standard Document Additions
+Standard Document Additions
+---------------------------
 
 **help needed**
 
-## Acknowledgements
+Acknowledgements
+----------------
 
 In comments on Richard Smith, a strawman syntax proposing a language approach as alternative to
 N3761 was mentioned.
