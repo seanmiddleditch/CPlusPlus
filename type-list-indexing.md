@@ -41,6 +41,30 @@ pack. Example:
 There are also cases where a user may only wish to iterate over part of a parameter pack such as when
 performing a binary search. This case is far more difficult to do with recursive template expansion
 than it would be if direct index access were allowed.
+
+## Alternatives
+
+The alternatives are the option presented in [N3761] or its alternatives.
+
+### std::tuple
+
+A user can convert a parameter pack into a tuple and then use `std::get<>` to access the nth element.
+
+This technique is a little verbose and is not immediately obvious. This will contribute to the general
+consensus that C++ template programming is difficult and only for experts.
+
+### type_at
+
+A small library addition would provide `std::type_at<N, Ts...>::type` and `std::value_at<N>(pack...)`.
+These can of course have C++14 style aliases such as `type_at_t`.
+
+The original comments included a note by Bjarne Stroustrip that the sample implementation provided would
+execute in O(N) compile time. `std::integer_sequence` provides some implementation insight on how to
+reduce this to O(log(N)) or that an implementation could use vendor-specific built-ins to implement this
+in O(1).
+
+This proposal provides O(1) access using a standard syntax in place of an implementation-specific
+feature backing a library interface.
 	
 ## Example Syntax
 
@@ -52,7 +76,7 @@ The proposed syntax looks like:
 	// context: template <typename ...Ts> void function(Ts... ts)
 	auto fourth_value = ts...[3];
 	
-## Standard Additions
+## Standard Document Additions
 
 **help needed**
 
