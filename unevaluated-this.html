@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<style>
+body {
+	font-family: sans-serif;
+	background-color: gray;
+	margin: 2pc 0;
+	line-height: 140%;
+	font-size: small;
+}
+#document {
+	background-color: white;
+	color: black;
+	padding: 2pc;
+	box-shadow: 0 0 40px black;
+	max-width: 56pc;
+	margin-left: auto;
+	margin-right: auto;
+}
+code {
+	color: #900;
+}
+p {
+	margin-left: 4pc;
+	margin-right: 3pc;
+}
+ul, ol {
+	margin-left: 4pc;
+}
+li {
+	margin-bottom: 3pt;
+}
+h2 {
+	border-top: 1px solid lightgray;
+	padding-top: 1.5pc;
+	margin-top: 1.5pc;
+}
+h3 {
+	margin-left: 2pc;
+}
+h4 {
+	margin-left: 4pc;
+}
+pre {
+	margin-left: 3.75pc;
+	margin-right: 3pc;
+	background: #eee;
+	padding: 3pt;
+}
+#footer {
+	text-align: center;
+	border-top: 1px solid gray;
+	margin-top: 4pc;
+	padding-top: 0.5pc;
+}
+</style>
+<head>
+<body>
+<div id="document">
+<h1 id="unevaluated-this">Unevaluted <code>this</code></h1>
+<p>ISO/IEC JTC1 SC22 WG21 NXXXX — 2014-09-XX</p>
+<p>Sean Middleditch <a href="mailto:sean@seanmiddleditch.com">&lt;sean@seanmiddleditch&gt;</a></p>
+<h2 id="summary">Summary</h2>
+<p>This proposal seeks to allow the use of <code>this</code> outside of member function definitions. A number of common patterns and utilities in applications and libraries rely on needing to know the declared type of the context they are in which today requires non-intuitive constructs or error-prone duplication of class names.</p>
+<h2 id="proposal">The Proposal</h2>
+<p>Allow the use of <code>this</code> in unevaluated contexts (e.g. <code>decltype</code>, <code>sizeof</code>) within a class definition body or base specifiers. In these contexts, the type of <code>this</code> is pointer to the declared type of the class. Outside of these contexts, the use of <code>this</code> is still an error.</p>
+<p>This proposal also includes a helper type with suggested name <code>std::this_t</code> which is the declared type of the class without any cv-qualifiers, references, or pointers, or undefined outside of appropriate class definition context.</p>
+<p>The <code>std::this_t</code> facility can be implemented as a pure library extension provided support for the use of unevaluated <code>this</code>.</p>
+<h2 id="motivation-and-use-cases">Motivation and Use Cases</h2>
+<h3 id="header-macro-context">Header Macro Context</h3>
+<p>A number of libraries require code generation of some form (often using macros) that extends or modifies a user-defined class. Macros of this nature are often found as the first or last line of a class definition. These macros often need to know the type of the class they are being applied to and are usually implemented by requiring the user to specify the name of the class, resulting in repetitive and error-prone usage.</p>
+<h4 id="macro-example">Macro Example</h4>
+<pre><code>// special_properties.h
+#define DECLARE_SPECIAL_PROPERTIES(type) \
+  public: auto& get_custom_rtti() const { return custom_rtti_holder<std::remove_const_t<type>>::type; } \
+  static auto& my_custom_rtti() { return custom_rtti_holder<type>::type; \
+  private:
+  
+// my_class.h
+#include "special_properties.h"
+class my_class {
+  DECLARE_SPECIAL_PROPERTIES(my_class); // duplicate specification of the class name
+  
+  /* rest of class definition */
+};</code></pre>
+<p>Many books and other sources of information recommend approaches like this, especially in constrained environments that cannot use RTTI and need to implement their own user-controllable alternative.</p>
+<p>Some toolkits prefer the use of special-built code generators rather than the C++ macro facility. This proposal still provides benefit to this users as it reduces the complexity of their tools. As much as it would be nice to remove the need for some of these tools, some developers have rather heavy investment in tools like <a href="http://qt-project.org/doc/qt-4.8/moc.html" title="Qt Meta Object Compiler">moc</a> or <a href="https://www.unrealengine.com/blog/unreal-property-system-reflection" title="Unreal Property System (Reflection)">Unreal's tools</a> or in developing similar tools in cases where reflection on its own is not enough and code generation is required.</p>
+<p>With this proposal, the definition of the macro <code>DECLARE_SPECIAL_PROPERTIES</code> above would no longer need to take the class' name as a parameter, reducing the error-prone nature of current techniques (in which a user, copying a class to create a new sibling, may remember to change the class definition but not the macro invocation, which does happen).</p>
+<h3 id="reflection-complement">Reflection Complement</h3>
+<p>Much of what macros like this do will be assisted by the reflection proposals in papers like <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4113.pdf" title="Reflection Type Traits For Classes, Unions and Enumerations (rev 3)">N4113</a>. However, most of these proposals are still lacking the facility proposed in this paper: the ability to determine the current class context.</p>
+<p>The need for the macro in the previous use case may be almost removed entirely with a reflection facility but only if that facility has a way of finding the current class type.</p>
+<h3 id="crtp">CRTP</h3>
+<p>There are also potential benefits to the use of CRTP. This feature may facilitate much of the features sought after by the "mixins" suggestions that come up on the <a href="http://isocpp.org">ISOCPP.org</a> mailing lists.</p>
+<pre><code>template &lt;typename T&gt;
+class crtp { /* ... */ };
+
+// without this proposal
+template &lt;typename First, typename Second, typename Third&gt;
+class derived : public crtp&lt;derived&lt;First, Second, Third&gt;&gt; { /* ... */ };
+
+// with this proposal
+template &lt;typename First, typename Second, typename Third&gt;
+class derived : public crtp&lt;std::this_t&gt; { /* ... */ };</code></pre>
+<p>It should be easy to see how the current approach can become quite unwieldly with more complex templates.</p>
+<h2 id="alternatives">Alternatives</h2>
+<h3 id="decltype-class"><code>decltype(class)</code></h3>
+<h4 id="decltype-class-summary">Summary</h4>
+<p>Provide a language extension spelt <code>decltype(class)</code> that combines the behavior of unevaluated <code>this</code> and <code>std::this_t</code>.</p>
+<h4 id="decltype-class-cons">Cons</h4>
+<p>The alternative has less flexibility than the option presented in this paper. It could also potentially present a parsing ambiguity and require either a contextual keyword, keyword, or compiler-assisted type trait to implement. This alternative was my original idea but ultimately its motivation of easy access to the unadorned class type is actually provided with even more end-user ease (read "less typing") by <code>std::this_t</code>.</p>
+<h2 id="implementation">Implementation</h2>
+<h3 id="language-addition">Language Addition</h3>
+<p>The additional language feature is to simple allow use of <code>this</code> in any unevaluated context without the body of a class definition or in a base specifier list.</p>
+<p><strong>TODO</strong>: standardese</p>
+<h3 id="library-addition">Library Addition</h3>
+<p>The <code>std::this_t</code> addition requires a trivial library addition. Its purpose is to provide the type of <code>this</code> without any cv-qualifies, references, or pointers.</p>
+<pre><code>using this_t = std::remove_reference_t&lt;std::remove_pointer_t&lt;std::remove_cv_t&lt;decltype(this)&gt;&gt;&gt;;
+</code></pre>
+<h3 id="proposal-examples">Proposal Examples</h3>
+<h4 id="unevaluated-this-example">Unevaluated <code>this</code> Example</h4>
+<pre><code>class foo : crtp&lt;decltype(this)&gt; /* crtp&lt;foo*&gt; */
+{
+	using my_type = decltype(this); // my_type = foo*
+	
+	auto self() const -&gt; decltype(*this); // as today: return type is foo const&
+};</code></pre>
+<h4 id="library-this-t-example">Library <code>std::this_t</code> Example</h4>
+<pre><code>using test = std::this_t; // error
+
+class foo : crtp&lt;std::this_t&gt; /* crtp&lt;foo&gt; */
+{
+	using my_type = std::this_t; // my_type = foo
+	
+	auto self() const -&gt; std::this_t; // return type is foo
+};</code></pre>
+<h2 id="unanswered-questions">Unanswered Questions</h2>
+<h3 id="this-t-alias"><code>this_t</code> Alias</h3>
+<p>Will the <code>this_t</code> implementation require that the type be evaluated immediately? If so, the implementation may need to be:
+<pre><code>template &lt;class = void&gt;
+using this_t = std::remove_reference_t&lt;std::remove_pointer_t&lt;std::remove_cv_t&lt;decltype(this)&gt;&gt;&gt;;
+</code></pre>
+<p>And users will need to use <code>std::this_t&lt;&gt;</code> in order to instantiate the template in the current context.</p>
+<h3 id="current-function">Current Function</h3>
+<p>A separate but related feature would be the ability to get a pointer to the current function. This may also be of use to reflection facilities, particularly for logging, assertion, or instrumented profiling libraries. A library wrapper like <code>std::function_ptr</code> could return a constant expression function pointer to the current function (member function or otherwise). This feature is not a part of this paper.</p>
+<h3 id="standardese">Standardese</h3>
+<p>What should the actual wording be for addition to the standard?</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Ville Voutilainen provided useful feedback to my original thoughts on this feature on the std-proposals mailing list and steered me away from the <code>decltype(class)</code> syntax I originally proposed.</p>
+<p>I'd like to acknowledge the many other experts and great minds in the C++ community as a whole. My thoughts on this proposal have evolved a great deal over the last year after learning much about the design and criteria of C++ from all the other fantastic papers and talks, particularly regarding the value of generalized solutions and library solutions.</p>
+<p>I shamelessly copied the CSS and stylization of this document from Maurice Bos' proposal <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4072.html" title="Fixed Size Parameter Packs">N4072</a>.</p>
+<div id="footer">
+NXXXX — Unevaluated this - Sean Middleditch <a href="mailto:sean@seanmiddleditch.com">&lt;sean@seanmiddleditch&gt;</a>
+</div>
+</div>
+</body>
