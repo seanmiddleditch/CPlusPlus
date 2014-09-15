@@ -25,7 +25,7 @@ Motivation and Use Cases
 Various algorithms over parameter packs currently must be implemented as a recursive series of function
 or template invocations. This is often not the most natural or obvious way of implementing the algorithm.
 
-By allowing direct access to the element of a parameter pack by index, algorithms that need access to specific elements or ranges of elements become easier to write and reason about:
+By allowing direct access to the element of a parameter pack by index, algorithms that need access to specific elements or ranges of elements become easier to write and reason about. Consider this contrived example:
 
     template <typename Value, typename ...Ts> 
     constexpr auto binary_search(Value& value, Ts&... ts) { 
