@@ -1,5 +1,5 @@
-CPlusPlus
-=========
+C++ stuff by Sean
+=================
 
 September 2014
 --------------
