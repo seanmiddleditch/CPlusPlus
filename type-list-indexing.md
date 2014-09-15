@@ -29,16 +29,16 @@ By allowing direct access to the element of a parameter pack by index, loops may
 pack. Example:
 
     template <typename ...Ts>
-	constexpr bool all(Ts&&... ts)
-	{
-	  // check if any member of ts evaluates to false
-	  for (auto index = 0U; index != sizeof...(ts); ++index)
-	    if (!ts...[index])
-		  return false;
-		  
-	  // either all members evaluated to true or there were no members; only succeed in former case
-	  return sizeof...(ts) != 0;
-	}
+    constexpr bool all(Ts&&... ts)
+    {
+      // check if any member of ts evaluates to false
+      for (auto index = 0U; index != sizeof...(ts); ++index)
+        if (!ts...[index])
+    	  return false;
+    	  
+      // either all members evaluated to true or there were no members; only succeed in former case
+      return sizeof...(ts) != 0;
+    }
 
 There are also cases where a user may only wish to iterate over part of a parameter pack such as when
 performing a binary search. This case is far more difficult to do with recursive template expansion
@@ -61,7 +61,7 @@ consensus that C++ template programming is difficult and only for experts.
 A small library addition would provide `std::type_at<N, Ts...>::type` and `std::value_at<N>(pack...)`.
 These can of course have C++14 style aliases such as `type_at_t`.
 
-The original comments included a note by Bjarne Stroustrip that the sample implementation provided would
+The original comments included a note by Bjarne Stroustrup that the sample implementation provided would
 execute in O(N) compile time. `std::integer_sequence` provides some implementation insight on how to
 reduce this to O(log(N)) or that an implementation could use vendor-specific built-ins to implement this
 in O(1).
@@ -74,11 +74,11 @@ Example Syntax
 
 The proposed syntax looks like:
 
-	// context: template <typename ...Ts>
-	using third_type = Ts...[2];
-	
-	// context: template <typename ...Ts> void function(Ts... ts)
-	auto fourth_value = ts...[3];
+    // context: template <typename ...Ts>
+    using third_type = Ts...[2];
+    
+    // context: template <typename ...Ts> void function(Ts... ts)
+    auto fourth_value = ts...[3];
 	
 Standard Document Additions
 ---------------------------
@@ -91,7 +91,7 @@ Acknowledgements
 In comments [N3761], Richard Smith presented a strawman syntax proposing a language approach as
 alternative to the library approach presented. I used that as a trampoline for this paper.
 
-Bjarne Stroustrip illustrated the computational complexity problems with a pure library approach
+Bjarne Stroustrup illustrated the computational complexity problems with a pure library approach
 compared to a core language approach.
 
 **help needed** This same syntax was floated in response to another paper submitted to the committee
