@@ -1,10 +1,12 @@
 Type List Indexing
 ==================
 
-Document Number : NXXXX - 09-2014
-Date            : 2014-09-XX
-Project         : Programming Language C++, Evolution Working Group
-Reply-to        : Sean Middleditch <sean@seanmiddleditch.com>
+ - Document Number : NXXXX - 09-2014
+ - Date            : 2014-09-XX
+ - Project         : Programming Language C++, Evolution Working Group
+ - Reply-to        : Sean Middleditch <sean@seanmiddleditch.com>
+
+***
 
 Summary
 -------
@@ -86,8 +88,11 @@ Standard Document Additions
 Acknowledgements
 ----------------
 
-In comments on Richard Smith, a strawman syntax proposing a language approach as alternative to
-N3761 was mentioned.
+In comments [N3761], Richard Smith presented a strawman syntax proposing a language approach as
+alternative to the library approach presented. I used that as a trampoline for this paper.
+
+Bjarne Stroustrip illustrated the computational complexity problems with a pure library approach
+compared to a core language approach.
 
 **help needed** This same syntax was floated in response to another paper submitted to the committee
 sometime in the last year, but I have completely forgotten which paper or who made the suggestion,
