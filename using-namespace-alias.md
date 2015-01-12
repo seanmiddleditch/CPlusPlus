@@ -71,18 +71,18 @@ Standard Document Changes
 
 Modify the grammar rules in **7.3.2p1** to insert the new syntax:
 
->	namespace-alias-definition:
->		using identifier = qualified-namespace-specifier |
->		namespace identifier = qualified-namespace-specifier ;
+	namespace-alias-definition:  
+		using identifier = qualified-namespace-specifier |  
+		namespace identifier = qualified-namespace-specifier ;
 
 Modify the examples in **7.3.2p3** to use the new, consistent syntax while also keeping an example of
 the old syntax:
 
->	namespace Company_with_very_long_name { /∗ ... ∗/ }
->	using CWVLN = Company_with_very_long_name;
->	using CWVLN = Company_with_very_long_name; // OK: duplicate
->	using CWVLN = CWVLN;
->	namespace CWVLN = Company_with_very_long_name; // OK: namespace may be used in place of using
+	namespace Company_with_very_long_name { /∗ ... ∗/ }
+	using CWVLN = Company_with_very_long_name;
+	using CWVLN = Company_with_very_long_name; // OK: duplicate
+	using CWVLN = CWVLN;
+	namespace CWVLN = Company_with_very_long_name; // OK: namespace may be used in place of using
 
 Acknowledgements
 ----------------
