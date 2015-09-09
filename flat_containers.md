@@ -101,8 +101,8 @@ Using only types with noexcept move/copy also bypasses the problems entirely. Th
 
 - Recent SG14 Reflector Discussions
 
- - [flat_containers][https://groups.google.com/a/isocpp.org/forum/#!topic/sg14/WyYpdrWxj9Q]
- - [flat_map/set/etc]https://groups.google.com/a/isocpp.org/forum/#!topic/sg14/csLjKbLOArw
+ - https://groups.google.com/a/isocpp.org/forum/#!topic/sg14/WyYpdrWxj9Q
+ - https://groups.google.com/a/isocpp.org/forum/#!topic/sg14/csLjKbLOArw
 
 - Prior Art
 
