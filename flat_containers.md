@@ -91,7 +91,9 @@ Lets look at what the insert operation must do. It must shift elements right to 
     c. {1, 3, 3, 4, 5} // copy assign 3 to the old 4
     d. {1, 2, 3, 4, 5} // copy assign 2 to the old 3
     
-The problem can arise if we throw during step c. At this point, the invariant of unique elements are already violated (4 is duplicated). Undoing the operations requires shifting elements back to the left, which involves more copy operations, which themselves can throw. Completing the operation is the only other way to maintain the invariant, but that also requires yet more copy operations which can throw.
+The problem can arise if we throw during step c. At this point, the invariant of unique elements are already violated (4 is duplicated). Undoing the operations requires shifting elements back to the left, which involves more copy operations, which themselves can throw.
+
+Completing the insert operation is the other obvious way to maintain the invariant, but that also requires yet more copy operations which can throw.
 
 A remaining option is to simply clear the container on exception. This maintains the invariant as the empty set is both ordered and contains no duplicate elements. However, the author dislikes this solution as it results in lost data which may be critical to the user.
 
