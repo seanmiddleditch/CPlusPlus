@@ -6,13 +6,13 @@ Sean Middleditch <<sean@seanmiddleditch.com>>
 
 ## Introduction
 
-This paper serves to explain the desire for an utility of the _flat containers_ (`flat_set`, `flat_multimap`, etc.), named after their Boost implementation.
+This paper serves to explain the desire for the utility of the _flat containers_ (`flat_set`, `flat_multimap`, etc.), named after their Boost implementation.
 
-These containers are heterogeneous containers (maps and sets) which used contiguous storage, as compared to the standard `std::map` and `std::set` which are node-based containers.
+These containers are heterogeneous containers (maps and sets) which use contiguous storage, as compared to the standard `std::map` and `std::set` which are node-based containers.
 
 ### Purpose
 
-One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. One such benefit is a better cache access pattern. Another is a greatly reduced number of calls into the allocator.
+One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. Such as better cache access pattern and greatly reduced number of calls into the allocator.
 
 While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements.
 
@@ -32,7 +32,7 @@ The author of this paper has experience implementing and using similar data stru
 
 C++ today does not offer good facilities for maintaining a data structure such as this. Assuming that the structure is implemented as a sorted list of elements, the only available tool offered by the C++ library today is `std::lower_bound`. However, this algorithm does not directly find the value requested, requiring extra checks for use in find or erase operations. For insert, additional checks are also required to avoid inserting duplicate elements.
 
-These extra checks are not particularly onerous, but the author has seen mistakes arise in their use of the years (such as an algorithm that stated it would only insert unique elements but allowed duplicated).
+These extra checks are not particularly onerous, but the author has seen mistakes arise in their use of the years (such as an algorithm that stated it would only insert unique elements but allowed duplicates).
 
 Simply using algorithms to access an existing container does not enforce the invariants of the containers on other generic algorithms using said container. For instance, if users want a particular `vector` to contain only sorted elements, algorithms can easily break that invariant. We can see this today in the number of algorithms that require in-order element traversable (e.g. `std::set_union`) and how they silently fail on unsorted containers.
 
@@ -52,9 +52,9 @@ The key difference between the flat containers and the ordered standard containe
 
 Should the flat containers be actual containers or should they be container adaptors?
 
-The most natural representation for many uses of a flat container would be a single contiguous array with exponential growth properties, similar to `std::vector`. Implementations like Boost's are true containers, backed internally by a vector-like storage. The user has no option to use another backing store. In the author's experience, this has never been a real problem for use in real-time interactive simulations, which are often have particular memory allocation and layout concerns.
+The most natural representation for many uses of a flat container would be a single contiguous array with exponential growth properties, similar to `std::vector`. Implementations like Boost's are true containers, backed internally by a vector-like storage. The user has no option to use another backing store. In the author's experience, this has never been a real problem for use in real-time interactive simulations, which often have particular memory allocation and layout concerns.
 
-However, some users may find that they are better off with a segmented allocation model similar to `std::deque`. Yet other users may have specialized or custom backing containers that they wish to use, such as a fixed-size or stack-allocated array type. An adapator interface for flat containers would allow users to plug in whichever backing container they wish. This has a benefit of making the flat containers simpler as well, as they can easily be implemented as overloads of `insert`, `erase`, and `find`.
+However, some users may find that they are better off with a segmented allocation model similar to `std::deque`. Yet other users may have specialized or custom backing containers that they wish to use, such as a fixed-size or stack-allocated array type. An adapator interface for flat containers would allow users to plug in whichever backing container they wish. This has the benefit of making the flat containers simpler as well, as they can easily be implemented as overloads of `insert`, `erase`, and `find`.
 
 #### Internal Algorithm
 
