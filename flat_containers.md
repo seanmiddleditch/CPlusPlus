@@ -25,7 +25,7 @@ Matt Austern's paper [Why you shouldn't use set (and what you should use instead
 
 Andrei Alexandrescu described such a structure in Modern C++ Design and implemented it in Loki as [AssocVector](http://loki-lib.sourceforge.net/html/a00645.html)
 
-Boost includes [flat containers](http://www.boost.org/doc/libs/1_58_0/doc/html/container/non_standard_containers.html#container.non_standard_containers.flat_xxx) in their containers module.
+Boost includes [flat containers](http://www.boost.org/doc/libs/release/doc/html/container/non_standard_containers.html#container.non_standard_containers.flat_xxx) in their containers module.
 
 The author of this paper has experience implementing and using similar data structures.
 
