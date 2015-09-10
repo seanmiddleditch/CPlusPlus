@@ -2,8 +2,8 @@
 
 WG21 - SG14
 
-Sean Middleditch <<sean@seanmiddleditch.com>>
-Michael Wong
+- Sean Middleditch <<sean@seanmiddleditch.com>>
+- Michael Wong
 
 ## Introduction
 
