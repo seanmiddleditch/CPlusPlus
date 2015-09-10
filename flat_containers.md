@@ -3,18 +3,19 @@
 WG21 - SG14
 
 Sean Middleditch <<sean@seanmiddleditch.com>>
+Michael Wong
 
 ## Introduction
 
-This paper serves to explain the desire for the utility of the _flat containers_ (`flat_set`, `flat_multimap`, etc.), named after their Boost implementation.
+This paper serves to explain the desire for the utility of the _flat associative containers_ (`flat_map`, `flat_set`, `flat_multimap`, and `flat_multiset`), named after their Boost implementation.
 
-These containers are heterogeneous containers (maps and sets) which use contiguous storage, as compared to the standard `std::map` and `std::set` which are node-based containers.
+These containers are associative containers (maps and sets) which use contiguous storage, as compared to the standard `std::map` and `std::set` which are node-based containers.
 
 ### Purpose
 
 One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. Such as better cache access pattern and greatly reduced number of calls into the allocator.
 
-While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements.
+While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with current standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements.
 
 A possible implementation of a flat container is to store elements in a sorted array. This implementation allows `O(log(N))` lookup time; insertion and erasure time is `O(N)` in theory, though the practical performance of such operations with a flat container with trivially-movable types for small-ish `N` competes well with the `O(log(N))` time of the node-based containers.
 
@@ -30,19 +31,19 @@ The author of this paper has experience implementing and using similar data stru
 
 ### Need For a New Library
 
-C++ today does not offer good facilities for maintaining a data structure such as this. Assuming that the structure is implemented as a sorted list of elements, the only available tool offered by the C++ library today is `std::lower_bound`. However, this algorithm does not directly find the value requested, requiring extra checks for use in find or erase operations. For insert, additional checks are also required to avoid inserting duplicate elements.
+C++ today does not offer good facilities for maintaining a data structure such as this. Assuming that the structure is implemented as a sorted vector, the only available tool offered by the C++ library today is `std::lower_bound`. However, this algorithm does not directly find the value requested, requiring extra checks for use in find or erase operations. For insert, additional checks are also required to avoid inserting duplicate elements.
 
 These extra checks are not particularly onerous, but the author has seen mistakes arise in their use of the years (such as an algorithm that stated it would only insert unique elements but allowed duplicates).
 
 Simply using algorithms to access an existing container does not enforce the invariants of the containers on other generic algorithms using said container. For instance, if users want a particular `vector` to contain only sorted elements, algorithms can easily break that invariant. We can see this today in the number of algorithms that require in-order element traversable (e.g. `std::set_union`) and how they silently fail on unsorted containers.
 
-A custom container or adaptor that enforces these invariants can also provide a similar interface to the standard's current associative containers, which is important for composibility.
+A custom container or adaptor that enforces these invariants can also provide a similar interface to the current standard's current associative containers, which is important for composibility.
 
 ## Design Considerations
 
 ### Key Properties
 
-The flat containers have several key properties that differentiate them from the standard containers. The key difference between the flat containers and the unordered containers is that flat containers are _ordered_.
+The flat containers have several key properties that differentiate them from the current standard associative containers. The key difference between the flat containers and the unordered containers is that flat containers are _ordered_.
 
 The key difference between the flat containers and the ordered standard containers is that iterator stability is not guaranteed in the flat containers after insert or erase operations. This is an artifact of not using node-based storage for elements.
 
@@ -62,7 +63,7 @@ The simplest internal algorithm is to store sorted elements. This then allows in
 
 Another option is to use a heap-like algorithm. This approach improves on the cache locality of the search portion of the find algorithm. The author has no practical experience using this structure for a flat container implementation, but the approach is potentially promising.
 
-Yet another consideration for map containers is whether the key and value are stored as a `pair` or stored in separate regions. Storing the keys separately condenses them in memory, further improving cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector). However, this results in the value type of the container necessarily being a pair of references, which is different than other standard containers and has some caveats with standard idioms and algorithms.
+Yet another consideration for map containers is whether the key and value are stored as a `pair` or stored in separate regions. Storing the keys separately condenses them in memory, further improving cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector). However, this results in the value type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms.
 
 
 #### Exception Guarantees
@@ -111,3 +112,22 @@ Using only types with noexcept move/copy also bypasses the problems entirely. Th
  - [Loki AssocVector - Alexandrescu](http://loki-lib.sourceforge.net/html/a00645.html)
  - [Boost flat containers](http://www.boost.org/doc/libs/1_58_0/doc/html/container/non_standard_containers.html#container.non_standard_containers.flat_xxx)
  - ["Why you shouldn't use set (and what you should use instead)" - Matt Austern](http://lafstern.org/matt/col1.pdf)
+ - ["Cache-friendly binary search" - Joaquín M López Muñoz](http://bannalia.blogspot.fr/2015/06/cache-friendly-binary-search.html)
+
+- Contributors & Thanks
+
+ - Matthew Bentley
+ - Brian Ehlert
+ - Brent Friedman
+ - Ion Gaztañaga
+ - Nicolas Guillemot
+ - Joël Lamotte
+ - A. Joël Lamotte
+ - Nevin Liber
+ - Guillaume Matte
+ - John McFarlane
+ - Rene Rivera
+ - Patrice Roy
+ - Ville Voutilainen
+ - Chuck Walbourn
+ - Scott Wardle
