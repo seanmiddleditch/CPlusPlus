@@ -13,7 +13,7 @@ These containers are associative containers (maps and sets) which use contiguous
 
 ### Purpose
 
-One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. Such as better cache access pattern and greatly reduced number of calls into the allocator.
+One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. Such as better cache access pattern and greatly reduced number of calls into the allocator. Some performance numbers are available in the article [Traversing a linearized tree](http://bannalia.blogspot.fr/2015/06/traversing-linearized-tree.html) by Joaquín M López Muñoz.
 
 While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with current standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements.
 
@@ -113,6 +113,7 @@ Using only types with noexcept move/copy also bypasses the problems entirely. Th
  - [Boost flat containers](http://www.boost.org/doc/libs/1_58_0/doc/html/container/non_standard_containers.html#container.non_standard_containers.flat_xxx)
  - ["Why you shouldn't use set (and what you should use instead)" - Matt Austern](http://lafstern.org/matt/col1.pdf)
  - ["Cache-friendly binary search" - Joaquín M López Muñoz](http://bannalia.blogspot.fr/2015/06/cache-friendly-binary-search.html)
+ - ["Traversing a linearized tree" - Joaquín M López Muñoz](http://bannalia.blogspot.fr/2015/06/traversing-linearized-tree.html)
 
 - Contributors & Thanks
 
