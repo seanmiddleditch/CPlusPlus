@@ -1,6 +1,6 @@
 # Flat Containers
 
-WG21 - SG14
+- LEWG, SG14: D0038R0
 
 - Sean Middleditch <<sean@seanmiddleditch.com>>
 - Michael Wong
