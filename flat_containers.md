@@ -1,6 +1,7 @@
 # Flat Containers
 
-- LEWG, SG14: D0038R0
+- LEWG, SG14: D0038R1
+- 2015-09-12
 
 - Sean Middleditch <<sean@seanmiddleditch.com>>
 - Michael Wong
@@ -13,11 +14,9 @@ These containers are associative containers (maps and sets) which use contiguous
 
 ### Purpose
 
-One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits. Such as better cache access pattern and greatly reduced number of calls into the allocator. Some performance numbers are available in the article [Traversing a linearized tree](http://bannalia.blogspot.fr/2015/06/traversing-linearized-tree.html) by Joaquín M López Muñoz.
+One of the primary desires of the flat containers is that they provide a contiguous memory space for element storage. This provides several benefits, such as better cache access pattern and greatly reduced number of calls into the allocator. Some performance numbers are available in the article [Traversing a linearized tree](http://bannalia.blogspot.fr/2015/06/traversing-linearized-tree.html) by Joaquín M López Muñoz.
 
-While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with current standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements.
-
-A possible implementation of a flat container is to store elements in a sorted array. This implementation allows `O(log(N))` lookup time; insertion and erasure time is `O(N)` in theory, though the practical performance of such operations with a flat container with trivially-movable types for small-ish `N` competes well with the `O(log(N))` time of the node-based containers.
+The standard currently offers only node-based ordered associative containers. While these data structures have their strengths and uses and offer reasonable performance for general purpose applications, there are some domains (games, real-time, and embedded, among others) that are not always well served by the properties of node-based containers. There is a need for associative containers that maintain good cache locality for both find and iteration and minimize interaction with memory allocators. The flat containers covered by this paper are intended to satisfy this need.
 
 ### Previous Work
 
@@ -31,7 +30,11 @@ The author of this paper has experience implementing and using similar data stru
 
 ### Need For a New Library
 
-C++ today does not offer good facilities for maintaining a data structure such as this. Assuming that the structure is implemented as a sorted vector, the only available tool offered by the C++ library today is `std::lower_bound`. However, this algorithm does not directly find the value requested, requiring extra checks for use in find or erase operations. For insert, additional checks are also required to avoid inserting duplicate elements.
+While an _unordered container_ will generally have far faster lookup and insert time than a flat container, the unordered containers have the disadvantage of being unusable with current standard algorithms like `std::set_union` or `std::set_intersection` which require in-order iteration of elements. Flat containers are ordered, like `std::map` or `std::set`, and so the flat containers are usable with algorithms that require in-order element traversal.
+
+A possible implementation of a flat container is to store elements in a sorted array. This implementation allows `O(log(N))` lookup time; insertion and erasure time is `O(N)` in theory, though the practical performance of such operations with a flat container with trivially-movable types for small-ish `N` competes well with the `O(log(N))` time of the node-based containers.
+
+C++ today does not offer good facilities for maintaining a data structure such as these. Assuming that the structure is implemented as a sorted vector, the only available tool offered by the C++ library today is `std::lower_bound`. However, this algorithm does not directly find the value requested, requiring extra checks for use in find or erase operations. For insert, additional checks are also required to avoid inserting duplicate elements.
 
 These extra checks are not particularly onerous, but the author has seen mistakes arise in their use of the years (such as an algorithm that stated it would only insert unique elements but allowed duplicates).
 
@@ -63,7 +66,7 @@ The simplest internal algorithm is to store sorted elements. This then allows in
 
 Another option is to use a heap-like algorithm. This approach improves on the cache locality of the search portion of the find algorithm. The author has no practical experience using this structure for a flat container implementation, but the approach is potentially promising.
 
-Yet another consideration for map containers is whether the key and value are stored as a `pair` or stored in separate regions. Storing the keys separately condenses them in memory, further improving cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector). However, this results in the value type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms.
+Yet another consideration for map containers is whether the key and value are stored as a `pair` or stored in separate regions. Storing the keys separately condenses them in memory, further improving cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector). However, this results in the value type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms. See ["To Be or Not Be (an Iterator)"](http://ericniebler.com/2015/01/28/to-be-or-not-to-be-an-iterator/) by Eric Niebler about some of the problems with containers (and their iterators) that return reference proxies instead of real references.
 
 
 #### Exception Guarantees
@@ -99,6 +102,14 @@ Completing the insert operation is the other obvious way to maintain the invaria
 A remaining option is to simply clear the container on exception. This maintains the invariant as the empty set is both ordered and contains no duplicate elements. However, the author dislikes this solution as it results in lost data which may be critical to the user.
 
 Using only types with noexcept move/copy also bypasses the problems entirely. This is the author's primary usage experience, given the frequent use of the `-fno-exceptions` (or equivalent) compiler flag in the games industry, which may explain why the exception guarantees of the flat containers haven't been an actual concern for many of its users.
+
+#### Naming
+
+Naming being the problematic topic it is, here's some alternative names for the flat containers:
+
+- contiguous associative containers
+- associative vector containers
+- 
 
 ## References
 
