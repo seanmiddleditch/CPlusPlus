@@ -60,14 +60,23 @@ The most natural representation for many uses of a flat container would be a sin
 
 However, some users may find that they are better off with a segmented allocation model similar to `std::deque`. Yet other users may have specialized or custom backing containers that they wish to use, such as a fixed-size or stack-allocated array type. An adapator interface for flat containers would allow users to plug in whichever backing container they wish. This has the benefit of making the flat containers simpler as well, as they can easily be implemented as overloads of `insert`, `erase`, and `find`.
 
+The author has a slight preference for a making actual containers as that aligns closely with his practical experience, but is keen to hear any additional feedback on the adaptor approach.
+
 #### Internal Algorithm
 
 The simplest internal algorithm is to store sorted elements. This then allows insert, find, and erase operations to all operate in `O(log(N))` time (binary search), plus the time for shifting elements for insert and erase (typically very small for trivially-movable types, as `memmove`-like operations can be used for shifting).
 
 Another option is to use a heap-like algorithm. This approach improves on the cache locality of the search portion of the find algorithm. The author has no practical experience using this structure for a flat container implementation, but the approach is potentially promising.
 
-Yet another consideration for map containers is whether the key and value are stored as a `pair` or stored in separate regions. Storing the keys separately condenses them in memory, further improving cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector). However, this results in the value type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms. See ["To Be or Not Be (an Iterator)"](http://ericniebler.com/2015/01/28/to-be-or-not-to-be-an-iterator/) by Eric Niebler about some of the problems with containers (and their iterators) that return reference proxies instead of real references.
+In the author's opinion, some more study and analysis is warranted before making a firm design decision on this topic. 
 
+#### Reference Proxies
+
+A map container typically stores keys and values together as a `pair`. Another option is to store the keys separately from the values. This condenses the keys in memory and further improves cache locality, both for sorted vector and heap traversal algorithms (though only significantly for small `N` in the sorted vector).
+
+However, this results in the element type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms. See ["To Be or Not Be (an Iterator)"](http://ericniebler.com/2015/01/28/to-be-or-not-to-be-an-iterator/) by Eric Niebler about some of the problems with containers (and their iterators) that return reference proxies instead of real references.
+
+The author believes that storing the keys and values as `pair`s is likely the right approach, at least for C++ as it exists today. 
 
 #### Exception Guarantees
 
@@ -103,13 +112,7 @@ A remaining option is to simply clear the container on exception. This maintains
 
 Using only types with noexcept move/copy also bypasses the problems entirely. This is the author's primary usage experience, given the frequent use of the `-fno-exceptions` (or equivalent) compiler flag in the games industry, which may explain why the exception guarantees of the flat containers haven't been an actual concern for many of its users.
 
-#### Naming
-
-Naming being the problematic topic it is, here's some alternative names for the flat containers:
-
-- contiguous associative containers
-- associative vector containers
-- 
+The author's opinion is that the flat containers can only provide a basic exception guarantee at best. The author is not an expert on exception semantics with containers and is willing to hear alternative approaches to solving the problems outlined in this section.
 
 ## References
 
