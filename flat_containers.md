@@ -1,6 +1,6 @@
 # Flat Containers
 
-- LEWG, SG14: D0038R2
+- LEWG, SG14: D0038R3
 - 2015-09-14
 
 - Sean Middleditch <<sean@seanmiddleditch.com>>
@@ -112,7 +112,19 @@ A remaining option is to simply clear the container on exception. This maintains
 
 Using only types with noexcept move/copy also bypasses the problems entirely. This is the author's primary usage experience, given the frequent use of the `-fno-exceptions` (or equivalent) compiler flag in the games industry, which may explain why the exception guarantees of the flat containers haven't been an actual concern for many of its users.
 
-The author's opinion is that the flat containers can only provide a basic exception guarantee at best. The author is not an expert on exception semantics with containers and is willing to hear alternative approaches to solving the problems outlined in this section.
+The author's opinion is that the flat containers can only provide a basic exception guarantee at best; in the event of an exception, the container can be cleared to maintain its invariants.
+
+#### Delayed Insert/Sort
+
+A potential interface addition over the standard associative continers is to allow a "delayed insert." Such an operation allows the user to amortize the cost of the insertion sort operation when multiple elements are being inserted into the container.
+
+This is different than inserting a range of values as the inserted elements may not be sourced from another container, precluding the existance of any range of iterators to insert from. An example might be a file parsing interface that produces elements (not using input iterators) from a user-supplied file.
+
+Such an interface would require two different additional operations: the delayed insertion operation and a "finalize insertion" operation. An implementation could insert delayed elements in an unsorted manner to extra storage space in the container and the finalize insertion operation can then sort those elements into the live range of the container.
+
+Some implementation perform the insert finalization upon iteration. This causes begin/end operations to mutate the container, however, which can be surprising and problematic for concurrent access.
+
+The author's opinion is that this support is useful to provide, but not essential.
 
 ## References
 
