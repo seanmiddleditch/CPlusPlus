@@ -1,10 +1,9 @@
 # Flat Containers
 
-- LEWG, SG14: D0038R3
-- 2015-09-14
-
-- Sean Middleditch <<sean@seanmiddleditch.com>>
-- Michael Wong
+- P0038R0
+- LEWG, SG14
+- Date: 2015-09-25
+- Reply-to: Sean Middleditch <sean@seanmiddleditch.com>
 
 ## Introduction
 
@@ -80,7 +79,7 @@ The author believes that storing the keys and values as `pair`s is likely the ri
 
 #### Exception Guarantees
 
-The author believes that it is not possible to offer strong exception guarantees with the flat containers. We can see the problem just by looking at the base algorithms and the necessary invariants.
+The author believes that it is not possible to offer strong exception guarantees with the flat containers, but we can offer the basic exception guarantee. We can see the problem preventing the strong guarantee by looking at the base algorithms and the necessary invariants.
 
 When inserting an element into the middle of a vector which must stay sorted and contain only unique elements, and in which the vector's capacity already exceeds its size, elements must be shifted to the right to make room for the new element. If these elements can throw on move/copy, it is possible for an exception to be thrown partway through shifting the elements. At this point, the invariants of the data (sorted and unique elements) will not be consistent. However, making the invariant hold either requires rewinding the moves/copies that already took place (which could throw) or completing the shift and copying in the new element (which could throw).
 
@@ -124,7 +123,9 @@ Such an interface would require two different additional operations: the delayed
 
 Some implementation perform the insert finalization upon iteration. This causes begin/end operations to mutate the container, however, which can be surprising and problematic for concurrent access.
 
-The author's opinion is that this support is useful to provide, but not essential.
+The author has implemented this feature in a production codebase but it saw very little use.
+
+The author's opinion is that this support is useful to provide though not essential.
 
 ## References
 
@@ -143,13 +144,15 @@ The author's opinion is that this support is useful to provide, but not essentia
 
 - Contributors & Thanks
 
+ - SG14
+ - J F Bastien
  - Matthew Bentley
+ - Lawrence Crowl
  - Brian Ehlert
  - Brent Friedman
  - Ion Gaztañaga
  - Nicolas Guillemot
  - Joël Lamotte
- - A. Joël Lamotte
  - Nevin Liber
  - Guillaume Matte
  - John McFarlane
@@ -158,3 +161,4 @@ The author's opinion is that this support is useful to provide, but not essentia
  - Ville Voutilainen
  - Chuck Walbourn
  - Scott Wardle
+ - Michael Wong
