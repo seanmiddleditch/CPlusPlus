@@ -59,15 +59,17 @@ The most natural representation for many uses of a flat container would be a sin
 
 However, some users may find that they are better off with a segmented allocation model similar to `std::deque`. Yet other users may have specialized or custom backing containers that they wish to use, such as a fixed-size or stack-allocated array type. An adapator interface for flat containers would allow users to plug in whichever backing container they wish. This has the benefit of making the flat containers simpler as well, as they can easily be implemented as overloads of `insert`, `erase`, and `find`.
 
-The author has a slight preference for a making actual containers as that aligns closely with his practical experience, but is keen to hear any additional feedback on the adaptor approach.
+The author has a slight preference for a making actual containers as that aligns closely with his practical experience. Feedback from SG14 indicated some interested in the adaptor approach.
 
 #### Internal Algorithm
+
+Feedback from SG14 indicated strong interest in a level-order implementation rather than a sorted vector implementation. Interest was also raised for an ability to select the underlying algorithm, or separate containers or algorithms.
 
 The simplest internal algorithm is to store sorted elements. This then allows insert, find, and erase operations to all operate in `O(log(N))` time (binary search), plus the time for shifting elements for insert and erase (typically very small for trivially-movable types, as `memmove`-like operations can be used for shifting).
 
 Another option is to use a heap-like algorithm. This approach improves on the cache locality of the search portion of the find algorithm. The author has no practical experience using this structure for a flat container implementation, but the approach is potentially promising.
 
-In the author's opinion, some more study and analysis is warranted before making a firm design decision on this topic. 
+In the author's opinion, some more study and analysis is warranted before making a firm design decision on this topic.
 
 #### Reference Proxies
 
@@ -75,11 +77,13 @@ A map container typically stores keys and values together as a `pair`. Another o
 
 However, this results in the element type of the container necessarily being a pair of references, which is different than other current standard containers and has some caveats with standard idioms and algorithms. See ["To Be or Not Be (an Iterator)"](http://ericniebler.com/2015/01/28/to-be-or-not-to-be-an-iterator/) by Eric Niebler about some of the problems with containers (and their iterators) that return reference proxies instead of real references.
 
-The author believes that storing the keys and values as `pair`s is likely the right approach, at least for C++ as it exists today. 
+The author's opinion is that this design point is dependent both on the chosen internal algorithm as well as whether the standard library proxy iterator support.
 
 #### Exception Guarantees
 
-The author believes that it is not possible to offer strong exception guarantees with the flat containers, but we can offer the basic exception guarantee. We can see the problem preventing the strong guarantee by looking at the base algorithms and the necessary invariants.
+It is not possible to offer strong exception guarantees with the flat containers, but we can offer the basic exception guarantee. The question is whether this is acceptable.
+
+We can see the problem preventing the strong guarantee by looking at the base algorithms and the necessary invariants.
 
 When inserting an element into the middle of a vector which must stay sorted and contain only unique elements, and in which the vector's capacity already exceeds its size, elements must be shifted to the right to make room for the new element. If these elements can throw on move/copy, it is possible for an exception to be thrown partway through shifting the elements. At this point, the invariants of the data (sorted and unique elements) will not be consistent. However, making the invariant hold either requires rewinding the moves/copies that already took place (which could throw) or completing the shift and copying in the new element (which could throw).
 
@@ -111,7 +115,7 @@ A remaining option is to simply clear the container on exception. This maintains
 
 Using only types with noexcept move/copy also bypasses the problems entirely. This is the author's primary usage experience, given the frequent use of the `-fno-exceptions` (or equivalent) compiler flag in the games industry, which may explain why the exception guarantees of the flat containers haven't been an actual concern for many of its users.
 
-The author's opinion is that the flat containers can only provide a basic exception guarantee at best; in the event of an exception, the container can be cleared to maintain its invariants.
+The author's opinion is that the flat containers can provide only a basic exception guarantee without problem, as that models existing practice.
 
 #### Delayed Insert/Sort
 
