@@ -19,9 +19,9 @@ Feedback from Kona indicted that the committee prefers standalone containers rat
 
 #### Reference Proxies
 
-For the map containers, a design question is whether element access returns a pair<Key,Value> or a pair<Key&,Value&>, where pair may be a distinct type from std::pair. Returning a pair of references allows the keys and value to be stored separately in memory and keeping keys more tightly packed.
+For the flat_map containers, a design question is whether element access returns a pair<Key,Value> or a pair<Key&,Value&>, where pair may be a distinct type from std::pair. Returning a pair of references allows the keys and value to be stored separately in memory and keeping keys more tightly packed.
 
-An alternative approach is to break with the std::map-style interface and not return a pair at all, but rather for access to only return keys or values. This allows many of the performance advantages of reference proxy access without incuring the problems that C++ currently suffers with reference proxies.
+An alternative approach is to break with the std::flat_map-style interface and not return a pair at all, but rather for access to only return keys or values. This allows many of the performance advantages of reference proxy access without incuring the problems that C++ currently suffers with reference proxies.
 
 #### Exception Guarantee
 
@@ -51,7 +51,7 @@ We propse a new set of associative containers. These containers mandate contiguo
 	
 	The header <flat_map> defines the class templates flat_map and flat_multimap. The header <flat_set> defines the class templates flat_set and flat_multiset.
 	
-	23.X.2 Header <flat_map> synopsis [flat.map.syn]
+	23.X.2 Header <flat_map> synopsis [flat.flat_map.syn]
 	
 	#include <initializer_list>
 
@@ -100,9 +100,9 @@ We propse a new set of associative containers. These containers mandate contiguo
 	
 	TODO
 	
-	23.X.4 Class template flat_map [flat.map]
+	23.X.4 Class template flat_map [flat.flat_map]
 	
-	23.X.4.1 Class template flat_map overview [flat.map.overview]
+	23.X.4.1 Class template flat_map overview [flat.flat_map.overview]
 	
 	A flat_map is an associative container that supports unique keys (contains at most one of each key value) and provides for reasonably fast retrieval of values of another type T based on the keys while guaranting that keys and values are allocated contiguously. The flat_map class supports bidirectional iterators.
 	
@@ -118,6 +118,7 @@ We propse a new set of associative containers. These containers mandate contiguo
 			using mapped_type = T;
 			using key_compare = Compare;
 			using allocator_type = Allocator;
+			using pair_type = pair<const Key, T>;
 			using reference = T&;
 			using const_reference = const T&;
 			using iterator = implementation-defined; // See 23.2
@@ -139,8 +140,134 @@ We propse a new set of associative containers. These containers mandate contiguo
 			explicit flat_map(const Allocator&);
 			flat_map(const flat_map&, const Allocator&);
 			flat_map(flat_map&&, const Allocator&);
+			flat_map(InputIterator first, InputIterator last, const Allocator& a)
+			  : flat_map(first, last, Compare(), a) { }
+			flat_map(initializer_list<pair_type> il, const Allocator& a)
+			  : flat_map(il, Compare(), a) { }
+			~flat_map();
+			flat_map& operator=(const flat_map& x);
+			flat_map& operator=(flat_map&& x);
+			flat_map& operator=(initializer_list<pair_type>);
+			allocator_type get_allocator() const noexcept;
 			
-		}
+			// iterators:
+			iterator begin() noexcept;
+			const_iterator begin() const noexcept;
+			iterator end() noexcept;
+			const_iterator end() const noexcept;
+			reverse_iterator rbegin() noexcept;
+			const_reverse_iterator rbegin() const noexcept;
+			reverse_iterator rend() noexcept;
+			const_reverse_iterator rend() const noexcept;
+			const_iterator cbegin() const noexcept;
+			const_iterator cend() const noexcept;
+			const_reverse_iterator crbegin() const noexcept;
+			const_reverse_iterator crend() const noexcept;
+			// capacity:
+			bool empty() const noexcept;
+			size_type size() const noexcept;
+			size_type max_size() const noexcept;
+			
+			// 23.X.4.3, capacity:
+			size_type size() const noexcept;
+			size_type max_size() const noexcept;
+			size_type capacity() const noexcept;
+			bool empty() const noexcept;
+			void reserve(size_type n);
+			void shrink_to_fit();
+
+			// element access:
+			reference operator[](size_type n);
+			const_reference operator[](size_type n) const;
+			const_reference at(size_type n) const;
+			reference at(size_type n);
+			reference front();
+			const_reference front() const;
+			reference back();
+			const_reference back() const;
+			
+			// 23.X.4.4, data access
+			T* data() noexcept;
+			const T* data() const noexcept;
+			
+			// 23.X.4.5, modifiers:
+			template <class... Args> iterator emplace(const_iterator position, Args&&... args);
+			iterator insert(const_iterator position, const T& x);
+			iterator insert(const_iterator position, T&& x);
+			iterator insert(const_iterator position, size_type n, const T& x);
+			template <class InputIterator>
+			iterator insert(const_iterator position,
+			InputIterator first, InputIterator last);
+			iterator insert(const_iterator position, initializer_list<T> il);
+			iterator erase(const_iterator position);
+			iterator erase(const_iterator first, const_iterator last);
+			void swap(vector&);
+			void clear() noexcept;
+			
+			// 23.X.4.4, modifiers:
+			template <class... Args> pair<iterator, bool> emplace(Args&&... args);
+			template <class... Args> iterator emplace_hint(const_iterator position, Args&&... args);
+			  pair<iterator, bool> insert(const value_type& x);
+			template <class P> pair<iterator, bool> insert(P&& x);
+			  iterator insert(const_iterator position, const value_type& x);
+			template <class P>
+			  iterator insert(const_iterator position, P&&);
+			template <class InputIterator>
+			  void insert(InputIterator first, InputIterator last);
+			void insert(initializer_list<pair_type>);
+			iterator erase(const_iterator position);
+			size_type erase(const key_type& x);
+			iterator erase(const_iterator first, const_iterator last);
+			void swap(flat_map&);
+			void clear() noexcept;
+			
+			// observers:
+			key_compare key_comp() const;
+			
+			// 23.X.4.5, flat_map operations:
+			iterator find(const key_type& x);
+			const_iterator find(const key_type& x) const;
+			template <class K> iterator find(const K& x);
+			template <class K> const_iterator find(const K& x) const;
+			  size_type count(const key_type& x) const;
+			template <class K> size_type count(const K& x) const;
+			  iterator lower_bound(const key_type& x);
+			const_iterator lower_bound(const key_type& x) const;
+			template <class K> iterator lower_bound(const K& x);
+			template <class K> const_iterator lower_bound(const K& x) const;
+			  iterator upper_bound(const key_type& x);
+			const_iterator upper_bound(const key_type& x) const;
+			template <class K> iterator upper_bound(const K& x);
+			template <class K> const_iterator upper_bound(const K& x) const;
+			  pair<iterator,iterator>
+			  equal_range(const key_type& x);
+			pair<const_iterator,const_iterator>
+			  equal_range(const key_type& x) const;
+			template <class K>
+			  pair<iterator, iterator> equal_range(const K& x);
+			template <class K>
+			  pair<const_iterator, const_iterator> equal_range(const K& x) const;
+		};
+		
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator==(const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator< (const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator!=(const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator> (const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator>=(const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+		template <class Key, class T, class Compare, class Allocator>
+		  bool operator<=(const flat_map<Key,T,Compare,Allocator>& x,
+						  const flat_map<Key,T,Compare,Allocator>& y);
+
 	} // namespace std
 	
 ## References
