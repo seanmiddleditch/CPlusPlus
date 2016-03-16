@@ -118,8 +118,8 @@ We propse a new set of associative containers. These containers mandate contiguo
 			using mapped_type = T;
 			using key_compare = Compare;
 			using allocator_type = Allocator;
-			using pair_type = pair<const Key, T>;
-			using reference = T&;
+			using value_type = pair<const Key&, T&>;
+			using pair_reference = T&;
 			using const_reference = const T&;
 			using iterator = implementation-defined; // See 23.2
 			using const_iterator = implementation-defined; // See 23.2
@@ -142,12 +142,12 @@ We propse a new set of associative containers. These containers mandate contiguo
 			flat_map(flat_map&&, const Allocator&);
 			flat_map(InputIterator first, InputIterator last, const Allocator& a)
 			  : flat_map(first, last, Compare(), a) { }
-			flat_map(initializer_list<pair_type> il, const Allocator& a)
+			flat_map(initializer_list<value_type> il, const Allocator& a)
 			  : flat_map(il, Compare(), a) { }
 			~flat_map();
 			flat_map& operator=(const flat_map& x);
 			flat_map& operator=(flat_map&& x);
-			flat_map& operator=(initializer_list<pair_type>);
+			flat_map& operator=(initializer_list<value_type>);
 			allocator_type get_allocator() const noexcept;
 			
 			// iterators:
@@ -177,14 +177,10 @@ We propse a new set of associative containers. These containers mandate contiguo
 			void shrink_to_fit();
 
 			// element access:
-			reference operator[](size_type n);
-			const_reference operator[](size_type n) const;
-			const_reference at(size_type n) const;
-			reference at(size_type n);
-			reference front();
-			const_reference front() const;
-			reference back();
-			const_reference back() const;
+			T& operator[](const key_type& x);
+			T& operator[](key_type&& x);
+			T& at(const key_type& x);
+			const T& at(const key_type& x) const;
 			
 			// 23.X.4.4, modifiers:
 			template <class... Args> pair<iterator, bool> emplace(Args&&... args);
@@ -196,7 +192,7 @@ We propse a new set of associative containers. These containers mandate contiguo
 			  iterator insert(const_iterator position, P&&);
 			template <class InputIterator>
 			  void insert(InputIterator first, InputIterator last);
-			void insert(initializer_list<pair_type>);
+			void insert(initializer_list<value_type>);
 			iterator erase(const_iterator position);
 			size_type erase(const key_type& x);
 			iterator erase(const_iterator first, const_iterator last);
