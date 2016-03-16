@@ -186,24 +186,6 @@ We propse a new set of associative containers. These containers mandate contiguo
 			reference back();
 			const_reference back() const;
 			
-			// 23.X.4.4, data access
-			T* data() noexcept;
-			const T* data() const noexcept;
-			
-			// 23.X.4.5, modifiers:
-			template <class... Args> iterator emplace(const_iterator position, Args&&... args);
-			iterator insert(const_iterator position, const T& x);
-			iterator insert(const_iterator position, T&& x);
-			iterator insert(const_iterator position, size_type n, const T& x);
-			template <class InputIterator>
-			iterator insert(const_iterator position,
-			InputIterator first, InputIterator last);
-			iterator insert(const_iterator position, initializer_list<T> il);
-			iterator erase(const_iterator position);
-			iterator erase(const_iterator first, const_iterator last);
-			void swap(vector&);
-			void clear() noexcept;
-			
 			// 23.X.4.4, modifiers:
 			template <class... Args> pair<iterator, bool> emplace(Args&&... args);
 			template <class... Args> iterator emplace_hint(const_iterator position, Args&&... args);
@@ -267,8 +249,94 @@ We propse a new set of associative containers. These containers mandate contiguo
 		template <class Key, class T, class Compare, class Allocator>
 		  bool operator<=(const flat_map<Key,T,Compare,Allocator>& x,
 						  const flat_map<Key,T,Compare,Allocator>& y);
+						  
+		// specialized algorithms:
+		template <class Key, class T, class Compare, class Allocator>
+		  void swap(flat_map<Key,T,Compare,Allocator>& x,
+					flat_map<Key,T,Compare,Allocator>& y);
 
 	} // namespace std
+	
+	23.X.4.2 flat_map constructors, copy, and assignment [flat_map.cons]
+	
+	explicit flat_map(const Compare& comp = Compare(),
+					  const Allocator& = Allocator());
+					  
+		Effects: Constructs an empty flat_map using the specified comparison object and allocator.
+		Complexity: Constant.
+	
+	template <class InputIterator>
+	  flat_map(InputIterator first, InputIterator last,
+		  const Compare& comp = Compare(), const Allocator& = Allocator());
+	
+		Requires: If the iterator’s indirection operator returns an lvalue or a const rvalue pair<key_type,
+				  mapped_type>, then both key_type and mapped_type shall be CopyInsertable into *this.
+		Effects: Constructs an empty flat_map using the specified comparison object and allocator, and inserts
+				 elements from the range [first,last).
+		Complexity: Linear in N if the range [first,last) is already sorted using comp and otherwise N log N,
+					where N is last - first.
+					
+	23.X.4.3 flat_map element access [flat_map.access]
+	
+	T& operator[](const key_type& x);
+	
+		Effects: If there is no key equivalent to x in the flat_map, inserts value_type(x, T()) into the flat_map.
+		Requires: key_type shall be CopyInsertable and mapped_type shall be DefaultInsertable into
+				  *this.
+		Returns: A reference to the mapped_type corresponding to x in *this.
+		Complexity: logarithmic.
+	
+	T& operator[](key_type&& x);
+	
+		Effects: If there is no key equivalent to x in the flat_map, inserts value_type(std::move(x), T()) into
+				 the flat_map.
+		Requires: mapped_type shall be DefaultInsertable into *this.
+		Returns: A reference to the mapped_type corresponding to x in *this.
+		Complexity: logarithmic.
+	
+	T& at(const key_type& x);
+	const T& at(const key_type& x) const;
+	
+		Returns: A reference to the mapped_type corresponding to x in *this.
+		Throws: An exception object of type out_of_range if no such element is present.
+		Complexity: logarithmic.
+	
+	23.X.4.4 flat_map modifiers [flat_map.modifiers]
+	
+	template <class P> pair<iterator, bool> insert(P&& x);
+	template <class P> iterator insert(const_iterator position, P&& x);
+	template <class InputIterator>
+	  void insert(InputIterator first, InputIterator last);
+	
+		Effects: The first form is equivalent to return emplace(std::forward<P>(x)). The second form is
+				 equivalent to return emplace_hint(position, std::forward<P>(x)).
+		Remarks: These signatures shall not participate in overload resolution unless std::is_constructible<value_-
+				 type, P&&>::value is true.
+	
+	23.X.4.5 flat_map operations [flat_map.ops]
+	
+	iterator find(const key_type& x);
+	const_iterator find(const key_type& x) const;
+	iterator lower_bound(const key_type& x);
+	const_iterator lower_bound(const key_type& x) const;
+	iterator upper_bound(const key_type& x);
+	const_iterator upper_bound(const key_type &x) const;
+	pair<iterator, iterator>
+	  equal_range(const key_type &x);
+	pair<const_iterator, const_iterator>
+	  equal_range(const key_type& x) const;
+	
+		The find, lower_bound, upper_bound and equal_range member functions each have two versions,
+		one const and the other non-const. In each case the behavior of the two functions is identical except
+		that the const version returns a const_iterator and the non-const version an iterator (23.2.4).
+	
+	23.X.4.6 flat_map specialized algorithms [flat_map.special]
+	
+	template <class Key, class T, class Compare, class Allocator>
+	  void swap(flat_map<Key,T,Compare,Allocator>& x,
+				flat_map<Key,T,Compare,Allocator>& y);
+	
+		Effects: x.swap(y);
 	
 ## References
 
