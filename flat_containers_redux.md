@@ -168,7 +168,7 @@ We propse a new set of associative containers. These containers mandate contiguo
 			size_type size() const noexcept;
 			size_type max_size() const noexcept;
 			
-			// 23.X.4.3, capacity:
+			// capacity:
 			size_type size() const noexcept;
 			size_type max_size() const noexcept;
 			size_type capacity() const noexcept;
@@ -176,7 +176,7 @@ We propse a new set of associative containers. These containers mandate contiguo
 			void reserve(size_type n);
 			void shrink_to_fit();
 
-			// element access:
+			// 23.X.4.3, element access:
 			T& operator[](const key_type& x);
 			T& operator[](key_type&& x);
 			T& at(const key_type& x);
