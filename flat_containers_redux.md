@@ -15,7 +15,7 @@ This paper is a followup to the previous flat containers paper that confirms des
 
 #### Standalone Container
 
-Feedback from Kona indicted that the committee prefers standalone containers rather than an adaptor. This paper proposes the new containers flat_map, flat_set, flat_multimap, and flat_multiset.
+Feedback from Kona indicated that the committee prefers standalone containers rather than an adaptor. This paper proposes the new containers flat_map, flat_set, flat_multimap, and flat_multiset.
 
 #### Reference Proxies
 
